@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - HCMUTE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <img src="image/logotruong.png" alt="Logo" class="logo">
+        <span>🏠 Trang chủ - HCMUTE</span>
+    </div>
+
+    <div class="container">
+        <h1>CHỌN KHU VỰC<br>ĐỂ QUẢN LÝ</h1>
+        <div class="menu">
+            <button onclick="showChart()"><i class="fas fa-home"></i> Trang chủ</button>
+            <button onclick="function_ka()"><i class="fas fa-building"></i> Khu A</button>
+            <button onclick="function_kb()"><i class="fas fa-building"></i> Khu B</button>
+            <button onclick="function_kc()"><i class="fas fa-building"></i> Khu C</button>
+            <button onclick="function_kd()"><i class="fas fa-building"></i> Khu D</button>
+        </div>
+    </div>
+
+    <div id="chart-container">
+        <canvas id="chartNhietDo"></canvas>
+        <canvas id="chartDoAm"></canvas>
+        <canvas id="chartAQI"></canvas>
+    </div>
+
+    <div id="info-container" class="info-container">
+        <div class="info-box">
+            <img src="image/nhietdo.png" alt="Nhiệt độ">
+            <h2>Nhiệt độ</h2>
+            <p id="nhietdo">--</p>
+        </div>
+        <div class="info-box">
+            <img src="image/Doam.png" alt="Độ ẩm">
+            <h2>Độ ẩm</h2>
+            <p id="doam">--</p>
+        </div>
+        <div class="info-box">
+            <img src="image/AQIcrop.jpg" alt="AQI">
+            <h2>AQI</h2>
+            <p id="luongmua">--</p>
+        </div>
+    </div>
+
+    <div id="bot" class="info-container">
+        <div class="device-box">
+            <h1><center><img src="image/dentat.jpg" id="led1"></center>
+                <button type="button" id="btn1">On</button>
+                <button type="button" id="btn2">Off</button><br><br>
+            </h1>
+            <h2>Đèn 1</h2>
+        </div>
+        <div class="device-box">
+            <h1><center><img src="image/dentat.jpg" id="led2"></center>
+                <button type="button" id="btn3">On</button>
+                <button type="button" id="btn4">Off</button><br><br>
+            </h1>
+            <h2><center>Đèn 2</center></h2>
+        </div>
+        <div class="device-box">
+            <h1><center><img src="image/dentat.jpg" id="led3"></center>
+                <button type="button" id="btn5">On</button>
+                <button type="button" id="btn6">Off</button><br><br>
+            </h1>
+            <h2>Đèn 3</h22>
+        </div>
+    </div>
+    
+    <div class="footer">
+        Thực tập cơ sở và ứng dụng IoT<br>
+        Lê Nguyễn Công Danh - Lê Khắc Duy - Nguyễn Hoàng Phát
+    </div>
+
+    <script src="function.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-analytics.js"></script>
+
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyAm0JYVoDLgsFA_VUAJwp2lNp_rOu2H2rI",
+            authDomain: "dht22-3b177.firebaseapp.com",
+            databaseURL: "https://dht22-3b177-default-rtdb.firebaseio.com",
+            projectId: "dht22-3b177",
+            storageBucket: "dht22-3b177.firebasestorage.app",
+            messagingSenderId: "806489880883",
+            appId: "1:806489880883:web:ecbc4cf71f7c1d27afe646",
+            measurementId: "G-EHXMFLT376"
+                            };
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+    </script>
+
+
+<script>
+    function showInfo() {
+        let infoContainer = document.getElementById("info-container");
+        let bot = document.getElementById("bot");
+            
+        infoContainer.style.display = "flex";
+        bot.style.display = "flex";
+        
+        setTimeout(() => {
+            infoContainer.style.opacity = "1";
+            bot.style.opacity = "1";
+        }, 10);
+    }    
+</script>
+
+<script>
+    // Get button and LED image elements
+    const buttons = {
+        btn1: document.getElementById('btn1'), // ON LED1
+        btn2: document.getElementById('btn2'), // OFF LED1
+        btn3: document.getElementById('btn3'), // ON LED2
+        btn4: document.getElementById('btn4'), // OFF LED2
+        btn5: document.getElementById('btn5'), // ON LED3
+        btn6: document.getElementById('btn6')  // OFF LED3
+    };
+
+    const leds = {
+        led1: document.getElementById('led1'),
+        led2: document.getElementById('led2'),
+        led3: document.getElementById('led3')
+    };
+
+    // Firebase references
+    const ledRefs = {
+        led1: firebase.database().ref('Control/LED1'),
+        led2: firebase.database().ref('Control/LED2'),
+        led3: firebase.database().ref('Control/LED3')
+    };
+
+    // Function to update LED state in Firebase
+    function updateLedState(ledRef, value, ledName) {
+        console.log(`${value === 1 ? 'Bật' : 'Tắt'} ${ledName}`);
+        ledRef.set(value); // Update directly at Control/LEDx
+    }
+
+    // Add event listeners for buttons
+    buttons.btn1.addEventListener('click', () => updateLedState(ledRefs.led1, 1, 'LED1'));
+    buttons.btn2.addEventListener('click', () => updateLedState(ledRefs.led1, 0, 'LED1'));
+    buttons.btn3.addEventListener('click', () => updateLedState(ledRefs.led2, 1, 'LED2'));
+    buttons.btn4.addEventListener('click', () => updateLedState(ledRefs.led2, 0, 'LED2'));
+    buttons.btn5.addEventListener('click', () => updateLedState(ledRefs.led3, 1, 'LED3'));
+    buttons.btn6.addEventListener('click', () => updateLedState(ledRefs.led3, 0, 'LED3'));
+
+    // Function to update LED image based on Firebase value
+    function setupLedListener(ledRef, ledElement, ledName) {
+        ledRef.on('value', (snapshot) => { // Listen directly at Control/LEDx
+            const value = snapshot.val();
+            console.log(`${ledName} giá trị:`, value);
+            ledElement.src = value === 1 ? "image/denmo.jpg" : "image/dentat.jpg";
+        });
+    }
+
+    // Set up listeners for all LEDs
+    setupLedListener(ledRefs.led1, leds.led1, 'LED1');
+    setupLedListener(ledRefs.led2, leds.led2, 'LED2');
+    setupLedListener(ledRefs.led3, leds.led3, 'LED3');
+</script>
+
+
+    
+<script>
+    function showChart() {
+        let chartContainer = document.getElementById("chart-container");
+        let infoContainer = document.getElementById("info-container");
+        let bot = document.getElementById("bot");
+
+        // Hiển thị tất cả các canvas
+        document.getElementById("chartNhietDo").style.display = "block";
+        document.getElementById("chartDoAm").style.display = "block";
+        document.getElementById("chartAQI").style.display = "block";
+
+        // Hiển thị container chứa đồ thị
+        chartContainer.style.display = "block";
+
+        // Ẩn các ô thông số và thiết bị
+        infoContainer.style.display = "none";
+        infoContainer.style.opacity = "0";
+        bot.style.display = "none";
+        bot.style.opacity = "0";
+
+        setTimeout(() => {
+            chartContainer.style.opacity = "1";
+        }, 10);
+
+        document.querySelector("span").innerText = "🏠 Trang chủ - HCMUTE"; 
+    }
+</script>
+
+<script>
+    function hideChart() {
+        let chartContainer = document.getElementById("chart-container");
+        
+        // Ẩn tất cả các canvas
+        document.getElementById("chartNhietDo").style.display = "none";
+        document.getElementById("chartDoAm").style.display = "none";
+        document.getElementById("chartAQI").style.display = "none";
+        
+        // Ẩn container chứa đồ thị
+        chartContainer.style.display = "none";
+        chartContainer.style.opacity = "0";
+    }
+</script>
+
+<script>
+    function showChartForArea(chartId) {
+        let chartContainer = document.getElementById("chart-container");
+        let infoContainer = document.getElementById("info-container");
+        let bot = document.getElementById("bot");
+        
+        // Ẩn tất cả các canvas
+        document.getElementById("chartNhietDo").style.display = "none";
+        document.getElementById("chartDoAm").style.display = "none";
+        document.getElementById("chartAQI").style.display = "none";
+        
+        // Hiển thị canvas của khu vực được chọn
+        document.getElementById(chartId).style.display = "block";
+        
+        // Hiển thị container chứa đồ thị
+        chartContainer.style.display = "block";
+        
+        // Ẩn các ô thông số và thiết bị
+        infoContainer.style.display = "none";
+        infoContainer.style.opacity = "0";
+        bot.style.display = "none";
+        bot.style.opacity = "0";
+        
+        setTimeout(() => {
+            chartContainer.style.opacity = "1";
+        }, 10);
+    }
+</script>
+
+<script>
+    window.onload = function() {
+        showChart();
+    };
+</script>
+
+    <script>
+        var nhietDo = document.getElementById('nhietdo');
+        var dbRef = firebase.database().ref('cambien/KhuA').child('temperature');  
+        var doAm = document.getElementById('doam');
+        var dbRef2 = firebase.database().ref('cambien/KhuA').child('humidity');
+        var luongMua = document.getElementById('luongmua');
+        var dbRef3 = firebase.database().ref('cambien/KhuA').child('aqi');
+
+        var nhietDo_q2 = document.getElementById('nhietdo');
+        var dbRef4 = firebase.database().ref('cambien/KhuB').child('temperature');  
+        var doAm_q2 = document.getElementById('doam');
+        var dbRef5 = firebase.database().ref('cambien/KhuB').child('humidity');
+        var luongMua_q2 = document.getElementById('luongmua');
+        var dbRef6 = firebase.database().ref('cambien/KhuB').child('aqi');
+
+        var nhietDo_q3 = document.getElementById('nhietdo');
+        var dbRef7 = firebase.database().ref('cambien/KhuC').child('temperature'); 
+        var doAm_q3 = document.getElementById('doam');
+        var dbRef8 = firebase.database().ref('cambien/KhuC').child('humidity'); 
+        var luongMua_q3 = document.getElementById('luongmua');
+        var dbRef9 = firebase.database().ref('cambien/KhuC').child('aqi');
+
+        var nhietDo_q4 = document.getElementById('nhietdo');
+        var dbRef10 = firebase.database().ref('cambien/KhuD').child('temperature'); 
+        var doAm_q4 = document.getElementById('doam');
+        var dbRef11 = firebase.database().ref('cambien/KhuD').child('humidity'); 
+        var luongMua_q4 = document.getElementById('luongmua');
+        var dbRef12 = firebase.database().ref('cambien/KhuD').child('aqi');
+    </script>
+
+
+<script>
+    function function_ka(){
+        dbRef.on('value', snap => nhietDo.innerText = snap.val()+"°C");
+        dbRef2.on('value', snap => doAm.innerText = snap.val()+"%");
+        dbRef3.on('value', snap => luongMua.innerText = snap.val());
+        showInfo(); 
+        hideChart(); 
+        document.querySelector("span").innerText = "🏢 Khu A - HCMUTE"; 
+        loadDeviceState(currentZone);
+    }
+
+    function function_kb(){
+        dbRef4.on('value', snap => nhietDo_q2.innerText = snap.val()+"°C");
+        dbRef5.on('value', snap => doAm_q2.innerText = snap.val()+"%");
+        dbRef6.on('value', snap => luongMua_q2.innerText = snap.val());
+        showInfo();
+        hideChart();
+        document.querySelector("span").innerText = "🏢 Khu B - HCMUTE"; 
+        loadDeviceState(currentZone);
+    }
+
+    function function_kc(){
+        dbRef7.on('value', snap => nhietDo_q3.innerText = snap.val()+"°C");
+        dbRef8.on('value', snap => doAm_q3.innerText = snap.val()+"%");
+        dbRef9.on('value', snap => luongMua_q3.innerText = snap.val());
+        showInfo();
+        hideChart();
+        document.querySelector("span").innerText = "🏢 Khu C - HCMUTE"; 
+        loadDeviceState(currentZone);
+    }
+
+    function function_kd(){
+        dbRef10.on('value', snap => nhietDo_q4.innerText = snap.val()+"°C");
+        dbRef11.on('value', snap => doAm_q4.innerText = snap.val()+"%");
+        dbRef12.on('value', snap => luongMua_q4.innerText = snap.val());
+        showInfo();
+        hideChart();
+        document.querySelector("span").innerText = "🏢 Khu D - HCMUTE";
+        loadDeviceState(currentZone);
+    }
+</script>
+
+<script>
+    // Cập nhật trục x để cách nhau 2 tiếng (12 thời điểm)
+    var xValues = ["00:00", "02:00", "04:00", "06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
+    var barColors = ["#BFCAE6", "#94AAD6", "#7388C1", "#426EB4", "#205AA7", "#1B4F93", "#009298", "#00A6AD", "#00B2BF", "#6EC3C9", "#99D1D3", "#CAE5E8"]; // 12 màu cho 12 cột
+
+    // Đồ thị Nhiệt độ trung bình
+    var yValuesNhietDo = [28, 27, 26, 28, 30, 31, 33, 34, 32, 30, 29, 28]; // Dữ liệu giả cho 12 thời điểm
+    new Chart("chartNhietDo", {
+        type: "bar",
+        data: {
+            labels: xValues,
+            datasets: [{
+                backgroundColor: barColors,
+                data: yValuesNhietDo
+            }]
+        },
+        options: {
+            legend: {display: false},
+            title: {
+                display: true,
+                text: "Nhiệt độ trung bình trong ngày"
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        autoSkip: false, // Đảm bảo hiển thị tất cả nhãn trên trục x
+                        maxRotation: 45, // Xoay nhãn để tránh chồng lấn
+                        minRotation: 45
+                    }
+                }]
+            }
+        }
+    });
+
+    // Đồ thị Độ ẩm trung bình
+    var yValuesDoAm = [54, 56, 59, 60, 62, 65, 68, 66, 63, 58, 57, 56]; // Dữ liệu giả cho 12 thời điểm
+    new Chart("chartDoAm", {
+        type: "bar",
+        data: {
+            labels: xValues,
+            datasets: [{
+                backgroundColor: barColors,
+                data: yValuesDoAm
+            }]
+        },
+        options: {
+            legend: {display: false},
+            title: {
+                display: true,
+                text: "Độ ẩm trung bình trong ngày"
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }]
+            }
+        }
+    });
+
+    // Đồ thị AQI trung bình
+    var yValuesAQI = [30, 31, 32, 33, 35, 37, 40, 42, 43, 42, 40, 38]; // Dữ liệu giả cho 12 thời điểm
+    new Chart("chartAQI", {
+        type: "bar",
+        data: {
+            labels: xValues,
+            datasets: [{
+                backgroundColor: barColors,
+                data: yValuesAQI
+            }]
+        },
+        options: {
+            legend: {display: false},
+            title: {
+                display: true,
+                text: "AQI trung bình trong ngày"
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }]
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

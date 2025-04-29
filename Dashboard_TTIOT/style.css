@@ -1,0 +1,219 @@
+body {
+    overflow: hidden; /* Ẩn thanh cuộn */
+    height: 100vh; /* Chiều cao toàn màn hình */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-image: url('image/anhtruong.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: #5790ab;
+    color: white;
+    font-size: 2.5em;
+    font-weight: bold;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+    height: 60px;
+    margin-right: 20px;
+    position: absolute;
+    left: 20px;
+}
+
+h1, h2, h3, h4 {
+    color: #007fff;
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+    margin-top: 2px;
+}
+
+p{
+    font-size: 1.5em;
+}
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 50px;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.5s ease-out;
+    max-width: 800px; /* Giới hạn tối đa */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Canh giữa theo chiều dọc */
+    align-items: center; /* Canh giữa theo chiều ngang */
+    margin: auto;
+    margin-left: 10px; 
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;   /* Chuyển sang dọc */
+    align-items: flex-start;; /* Căn lề trái */
+    gap: 20px;
+    padding-left: 20px; /* Đẩy menu vào bên trái */
+}
+
+.menu button {
+    width: 250px; /* Đảm bảo tất cả nút có cùng chiều rộng */
+    height: 60px; /* Đảm bảo tất cả nút có cùng chiều cao */
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+    background-color: #007fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.menu button:hover {
+    background-color: #1d5286;
+    transform: translateY(-8px);
+}
+
+.menu button:focus {
+     outline: none;
+}
+
+.fade-page {
+    animation: fadeOut 0.5s ease-in-out;
+}
+
+.footer {
+    background: #5790ab;
+    color: white;
+    text-align: center;
+    padding: 5px;
+    position: absolute;
+    bottom: 2px; 
+    width: 100%;
+}
+
+#info-container {
+    display: none;
+    justify-content: flex-end;
+    align-items: center; 
+    position: absolute;
+    margin: right;
+    gap: 20px;
+    padding: 20px;
+    top: 28%;
+    right: 5%;
+    transform: translateY(-50%); /* Căn giữa theo chiều dọc */
+    background: none;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.info-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 250px;
+    transition: transform 0.3s ease;
+}
+
+.info-box:hover {
+    transform: translateY(-10px);
+}
+
+.info-box img {
+    height: 60px;
+    margin-bottom: 10px;
+}
+
+#bot {
+    display: none;
+    justify-content: flex-end;
+    align-items: center; 
+    position: absolute;
+    margin: right;
+    gap: 20px;
+    padding: 20px;
+    top: 68%;
+    right: 5%;
+    transform: translateY(-50%); /* Căn giữa theo chiều dọc */
+    background: none;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.device-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 250px;
+    transition: transform 0.3s ease;
+}
+
+.device-box:hover {
+    transform: translateY(-10px);
+}
+
+.device-box img {
+    height: 100px;
+    margin-bottom: 10px;
+}
+#chart-container {
+    display: none;
+    position: absolute;
+    top: 11%;
+    right: 8%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-out forwards;
+    width: 100%;
+    max-width: 800px; /* Tăng chiều rộng để chứa 12 cột */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+#chart-container canvas {
+    width: 100%;
+    max-width: 800px; /* Tăng chiều rộng mỗi biểu đồ để chứa 12 cột */
+    height: auto;
+    max-height: 210px;
+}
